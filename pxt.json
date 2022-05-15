@@ -1,0 +1,38 @@
+{
+    "name": "pxt-test-tp158-colorline",
+    "description": "",
+    "dependencies": {
+        "core": "*",
+        "radio": "*",
+        "microphone": "*",
+        "pxt-TPBot": "github:elecfreaks/pxt-tpbot#v1.2.3",
+        "pxt-planetx-rgbsensor-apds9960": "github:TomasKazda/pxt-PlanetX-RGBsensor-APDS9960#768a5b5c5f255337c8dea98fdbe4db27151416c2"
+    },
+    "files": [
+        "README.md",
+        "main.py",
+        "linetrack.py",
+        "tsconfig.json",
+        "test.ts",
+        "README.md",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "main.blocks",
+        "main.ts",
+        ".simstate.json",
+        "main.py",
+        "linetrack.py",
+        ".git.json"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "4.0.18",
+        "targetId": "microbit"
+    },
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "pyprj"
+}
