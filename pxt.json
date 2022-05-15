@@ -11,18 +11,7 @@
     "files": [
         "README.md",
         "main.py",
-        "linetrack.py",
-        "tsconfig.json",
-        "test.ts",
-        "README.md",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "main.blocks",
-        "main.ts",
-        ".simstate.json",
-        "main.py",
-        "linetrack.py",
-        ".git.json"
+        "linetrack.py"
     ],
     "testFiles": [
         "test.ts"
@@ -34,5 +23,6 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "pyprj"
+    "preferredEditor": "pyprj",
+    "languageRestriction": "python-only"
 }

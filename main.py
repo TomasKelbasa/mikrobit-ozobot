@@ -16,7 +16,7 @@ def track_line(white_line = False):
         return -1;
 
 def on_forever():
-    #console.log_value("line", track_line(False))
+    console.log_value("line", track_line(False))
     #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
     #console.log_value("hue",PlanetX_RGBsensor.read_color())
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
