@@ -11,7 +11,8 @@
     "files": [
         "README.md",
         "main.py",
-        "linetrack.py"
+        "linetrack.py",
+        "main.ts"
     ],
     "targetVersions": {
         "target": "4.0.18",
