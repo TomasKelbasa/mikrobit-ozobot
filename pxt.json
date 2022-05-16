@@ -13,9 +13,6 @@
         "main.py",
         "linetrack.py"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
     "targetVersions": {
         "target": "4.0.18",
         "targetId": "microbit"
