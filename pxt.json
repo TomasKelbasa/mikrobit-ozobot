@@ -6,7 +6,8 @@
         "radio": "*",
         "microphone": "*",
         "pxt-TPBot": "github:elecfreaks/pxt-tpbot#v1.2.3",
-        "pxt-planetx-rgbsensor-apds9960": "github:TomasKazda/pxt-PlanetX-RGBsensor-APDS9960#768a5b5c5f255337c8dea98fdbe4db27151416c2"
+        "pxt-planetx-rgbsensor-apds9960": "github:TomasKazda/pxt-PlanetX-RGBsensor-APDS9960#768a5b5c5f255337c8dea98fdbe4db27151416c2",
+        "pxt-PlanetX": "github:elecfreaks/pxt-planetx#v1.4.5"
     },
     "files": [
         "README.md",

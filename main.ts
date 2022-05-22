@@ -8,7 +8,8 @@ let colors = {
 }
 
 let hysteresis = 10
-function track_line(white_line: boolean = false) {
+let black_lightness = 20
+function track_line(white_line: boolean = true) {
     let left_tracking = pins.digitalReadPin(DigitalPin.P13)
     let right_tracking = pins.digitalReadPin(DigitalPin.P14)
     if (left_tracking == 0 && right_tracking == 0) {
@@ -26,9 +27,22 @@ function track_line(white_line: boolean = false) {
 }
 
 basic.forever(function on_forever() {
-    console.logValue("line", track_line(false))
+    // console.log_value("line", track_line(False))
     console.logValue("lightness", PlanetX_RGBsensor.getColorPoint())
-    console.logValue("hue", PlanetX_RGBsensor.readColor())
+    // console.log_value("hue",PlanetX_RGBsensor.read_color())
     console.logValue("dist", TPBot.sonarReturn(TPBot.SonarUnit.Centimeters, 300))
-    basic.pause(200)
+    // basic.pause(200)
+    let lightness = PlanetX_RGBsensor.getColorPoint()
+    if (TPBot.sonarReturn(TPBot.SonarUnit.Centimeters, 300) < 30) {
+        TPBot.stopCar()
+    } else if (lightness < black_lightness + 20) {
+        TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 0)
+    } else {
+        TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 70)
+    }
+    
+})
+input.onButtonPressed(Button.A, function on_button_pressed_a() {
+    
+    black_lightness = PlanetX_RGBsensor.getColorPoint()
 })
