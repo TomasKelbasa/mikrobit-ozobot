@@ -11,6 +11,7 @@ hysteresis = 10
 
 black_lightness = 20
 is_line_white = True
+speed = 40
 
 stop = False
 
@@ -31,23 +32,46 @@ def track_line(white_line):
         return -1;
         
 def on_forever():
+    global speed
+
     #console.log_value("line", track_line(False))
     #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
     #console.log_value("hue",PlanetX_RGBsensor.read_color())
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
-    lightness = PlanetX_RGBsensor.get_color_point()
+    #lightness = PlanetX_RGBsensor.get_color_point()
 
     line_direction = track_line(is_line_white)
-
     if line_direction == 3:
-        pass
+        TPBot.set_wheels(speed, speed)
+        basic.clear_screen()
     elif line_direction == 2:
-        TPBot.set_wheels(30, 20)
+        #basic.show_leds("""
+                        # . . . .
+                        # . . . .
+                        # . . . .
+                        # . . . .
+                        # . . . .
+         #               """, 0)
+        TPBot.set_wheels(0, speed)
     elif line_direction == 1:
-        TPBot.set_wheels(20, 30)
+        #basic.show_leds("""
+       #                 . . . . #
+        #                . . . . #
+         #               . . . . #
+          #              . . . . #
+           #             . . . . #
+         #               """, 0)
+        TPBot.set_wheels(speed, 0)
     elif line_direction == 0:
-        pass
+        #basic.show_leds("""
+                # . . . #
+                # . . . #
+                # . . . #
+                # . . . #
+                # . . . #
+                #""", 0)
+        TPBot.set_wheels(speed, speed)
     else:
         music.play_tone(Note.A, music.beat(8))
 
@@ -88,7 +112,6 @@ def on_button_pressed_b():
         # # . # #
         # # . # #
         # # . # #
-        
         # # . # #
         """, 0)
     is_line_white = not is_line_white

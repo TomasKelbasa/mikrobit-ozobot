@@ -10,6 +10,7 @@ let colors = {
 let hysteresis = 10
 let black_lightness = 20
 let is_line_white = true
+let speed = 40
 let stop = false
 TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 50)
 function track_line(white_line: boolean) {
@@ -30,21 +31,44 @@ function track_line(white_line: boolean) {
 }
 
 basic.forever(function on_forever() {
+    
     // console.log_value("line", track_line(False))
     // console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
     // console.log_value("hue",PlanetX_RGBsensor.read_color())
     // console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     // basic.pause(200)
-    let lightness = PlanetX_RGBsensor.getColorPoint()
+    // lightness = PlanetX_RGBsensor.get_color_point()
     let line_direction = track_line(is_line_white)
     if (line_direction == 3) {
-        
+        TPBot.setWheels(speed, speed)
+        basic.clearScreen()
     } else if (line_direction == 2) {
-        TPBot.setWheels(30, 20)
+        // basic.show_leds("""
+        //  . . . .
+        //  . . . .
+        //  . . . .
+        //  . . . .
+        //  . . . .
+        //                """, 0)
+        TPBot.setWheels(0, speed)
     } else if (line_direction == 1) {
-        TPBot.setWheels(20, 30)
+        // basic.show_leds("""
+        //                  . . . . #
+        //                 . . . . #
+        //                . . . . #
+        //               . . . . #
+        //              . . . . #
+        //                """, 0)
+        TPBot.setWheels(speed, 0)
     } else if (line_direction == 0) {
-        
+        // basic.show_leds("""
+        //  . . . #
+        //  . . . #
+        //  . . . #
+        //  . . . #
+        //  . . . #
+        // """, 0)
+        TPBot.setWheels(speed, speed)
     } else {
         music.playTone(Note.A, music.beat(8))
     }
@@ -87,7 +111,6 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
         # # . # #
         # # . # #
         # # . # #
-        
         # # . # #
         `, 0)
     }
