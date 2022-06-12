@@ -10,8 +10,13 @@ colors = {
 hysteresis = 10
 
 black_lightness = 20
+is_line_white = True
 
-def track_line(white_line = True):
+stop = False
+
+TPBot.set_travel_speed(TPBot.DriveDirection.FORWARD, 50)
+
+def track_line(white_line):
     left_tracking = pins.digital_read_pin(DigitalPin.P13);
     right_tracking = pins.digital_read_pin(DigitalPin.P14);
     if left_tracking == 0 and right_tracking == 0:
@@ -27,21 +32,39 @@ def track_line(white_line = True):
         
 def on_forever():
     #console.log_value("line", track_line(False))
-    console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
+    #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
     #console.log_value("hue",PlanetX_RGBsensor.read_color())
-    console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
+    #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
     lightness = PlanetX_RGBsensor.get_color_point()
 
-    if TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300) < 30:
-        TPBot.stop_car()
+    line_direction = track_line(is_line_white)
+
+    if line_direction == 3:
+        pass
+    elif line_direction == 2:
+        TPBot.set_wheels(30, 20)
+    elif line_direction == 1:
+        TPBot.set_wheels(20, 30)
+    elif line_direction == 0:
+        pass
     else:
-        if lightness < black_lightness+20:
-            TPBot.set_travel_speed(TPBot.DriveDirection.FORWARD, 0)
-        else:
-            TPBot.set_travel_speed(TPBot.DriveDirection.FORWARD, 70)
-    
+        music.play_tone(Note.A, music.beat(8))
+
 basic.forever(on_forever)
+
+def onIn_background():
+    global stop
+    while True:
+        if TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300) < 25:
+            stop = True
+            TPBot.stop_car()
+        else:
+            stop = False
+            TPBot.set_travel_speed(TPBot.DriveDirection.Forward, 50)
+        control.wait_micros(1000)
+        console.log_value("stop", stop)
+#control.in_background(onIn_background)
 
 
 def on_button_pressed_a():
@@ -49,4 +72,25 @@ def on_button_pressed_a():
     black_lightness = PlanetX_RGBsensor.get_color_point()
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
-#####
+def on_button_pressed_b():
+    global is_line_white
+    if is_line_white:
+        basic.show_leds("""
+        . . # . .
+        . . # . .
+        . . # . .
+        . . # . .
+        . . # . .
+        """, 0)
+    else:
+        basic.show_leds("""
+        # # . # #
+        # # . # #
+        # # . # #
+        # # . # #
+        
+        # # . # #
+        """, 0)
+    is_line_white = not is_line_white
+input.on_button_pressed(Button.B, on_button_pressed_b)
+
