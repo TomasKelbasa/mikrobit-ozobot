@@ -48,3 +48,5 @@ def on_button_pressed_a():
     global black_lightness
     black_lightness = PlanetX_RGBsensor.get_color_point()
 input.on_button_pressed(Button.A, on_button_pressed_a)
+
+#####
