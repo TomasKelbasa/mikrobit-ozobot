@@ -1,5 +1,6 @@
 pins.set_pull(DigitalPin.P13, PinPullMode.PULL_NONE)
 pins.set_pull(DigitalPin.P14, PinPullMode.PULL_NONE)
+pins.set_pull(DigitalPin.P16, PinPullMode.PULL_NONE)
 
 colors = {
     "red": [20, 350],
@@ -10,6 +11,7 @@ colors = {
 hysteresis = 10
 
 black_lightness = 20
+white_lightness = 400
 is_line_white = True
 speed = 40
 
@@ -36,41 +38,22 @@ def on_forever():
 
     #console.log_value("line", track_line(False))
     #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
-    #console.log_value("hue",PlanetX_RGBsensor.read_color())
+    console.log_value("hue",PlanetX_RGBsensor.read_color())
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
     #lightness = PlanetX_RGBsensor.get_color_point()
 
+    #hue = PlanetX_RGBsensor.get_color_point()
+    #if 120 < hue < 140:
+     #   music.play_tone(Note.E, music.beat(10)) 
     line_direction = track_line(is_line_white)
     if line_direction == 3:
         TPBot.set_wheels(speed, speed)
-        basic.clear_screen()
     elif line_direction == 2:
-        #basic.show_leds("""
-                        # . . . .
-                        # . . . .
-                        # . . . .
-                        # . . . .
-                        # . . . .
-         #               """, 0)
         TPBot.set_wheels(0, speed)
     elif line_direction == 1:
-        #basic.show_leds("""
-       #                 . . . . #
-        #                . . . . #
-         #               . . . . #
-          #              . . . . #
-           #             . . . . #
-         #               """, 0)
         TPBot.set_wheels(speed, 0)
     elif line_direction == 0:
-        #basic.show_leds("""
-                # . . . #
-                # . . . #
-                # . . . #
-                # . . . #
-                # . . . #
-                #""", 0)
         TPBot.set_wheels(speed, speed)
     else:
         music.play_tone(Note.A, music.beat(8))
@@ -78,26 +61,37 @@ def on_forever():
 basic.forever(on_forever)
 
 def onIn_background():
-    global stop
+    global white_lightness
     while True:
-        if TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300) < 25:
-            stop = True
-            TPBot.stop_car()
-        else:
-            stop = False
-            TPBot.set_travel_speed(TPBot.DriveDirection.Forward, 50)
-        control.wait_micros(1000)
-        console.log_value("stop", stop)
+        hue = PlanetX_RGBsensor.read_color()
+        console.log_value("hue", hue)
+        if (hue <= 20) or (hue >= 350):
+            #červená
+            music.play_tone(Note.C, 100)
+            pass
+        elif 70 < hue < 80:
+            #žlutá
+            music.play_tone(Note.E, 100)
+            pass
+        elif 120 < hue < 140:
+            #zelená
+            music.play_tone(Note.G, 100)
+            pass
+        elif 210 < hue < 225:
+            #modrá
+            music.play_tone(Note.FSHARP5, 100)
+            pass
 #control.in_background(onIn_background)
-
 
 def on_button_pressed_a():
     global black_lightness
     black_lightness = PlanetX_RGBsensor.get_color_point()
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
+
 def on_button_pressed_b():
     global is_line_white
+
     if is_line_white:
         basic.show_leds("""
         . . # . .
@@ -105,7 +99,7 @@ def on_button_pressed_b():
         . . # . .
         . . # . .
         . . # . .
-        """, 0)
+        """)
     else:
         basic.show_leds("""
         # # . # #
@@ -115,5 +109,4 @@ def on_button_pressed_b():
         # # . # #
         """, 0)
     is_line_white = not is_line_white
-input.on_button_pressed(Button.B, on_button_pressed_b)
-
+input.on_button_pressed(Button.B, on_button_pressed_b) 

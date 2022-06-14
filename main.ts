@@ -1,5 +1,6 @@
 pins.setPull(DigitalPin.P13, PinPullMode.PullNone)
 pins.setPull(DigitalPin.P14, PinPullMode.PullNone)
+pins.setPull(DigitalPin.P16, PinPullMode.PullNone)
 let colors = {
     "red" : [20, 350],
     "yellow" : [70, 80],
@@ -9,6 +10,7 @@ let colors = {
 
 let hysteresis = 10
 let black_lightness = 20
+let white_lightness = 400
 let is_line_white = true
 let speed = 40
 let stop = false
@@ -34,40 +36,21 @@ basic.forever(function on_forever() {
     
     // console.log_value("line", track_line(False))
     // console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
-    // console.log_value("hue",PlanetX_RGBsensor.read_color())
+    console.logValue("hue", PlanetX_RGBsensor.readColor())
     // console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     // basic.pause(200)
     // lightness = PlanetX_RGBsensor.get_color_point()
+    // hue = PlanetX_RGBsensor.get_color_point()
+    // if 120 < hue < 140:
+    //    music.play_tone(Note.E, music.beat(10)) 
     let line_direction = track_line(is_line_white)
     if (line_direction == 3) {
         TPBot.setWheels(speed, speed)
-        basic.clearScreen()
     } else if (line_direction == 2) {
-        // basic.show_leds("""
-        //  . . . .
-        //  . . . .
-        //  . . . .
-        //  . . . .
-        //  . . . .
-        //                """, 0)
         TPBot.setWheels(0, speed)
     } else if (line_direction == 1) {
-        // basic.show_leds("""
-        //                  . . . . #
-        //                 . . . . #
-        //                . . . . #
-        //               . . . . #
-        //              . . . . #
-        //                """, 0)
         TPBot.setWheels(speed, 0)
     } else if (line_direction == 0) {
-        // basic.show_leds("""
-        //  . . . #
-        //  . . . #
-        //  . . . #
-        //  . . . #
-        //  . . . #
-        // """, 0)
         TPBot.setWheels(speed, speed)
     } else {
         music.playTone(Note.A, music.beat(8))
@@ -75,18 +58,29 @@ basic.forever(function on_forever() {
     
 })
 function onIn_background() {
+    let hue: number;
     
     while (true) {
-        if (TPBot.sonarReturn(TPBot.SonarUnit.Centimeters, 300) < 25) {
-            stop = true
-            TPBot.stopCar()
-        } else {
-            stop = false
-            TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 50)
+        hue = PlanetX_RGBsensor.readColor()
+        console.logValue("hue", hue)
+        if (hue <= 20 || hue >= 350) {
+            // červená
+            music.playTone(Note.C, 100)
+            
+        } else if (70 < hue && hue < 80) {
+            // žlutá
+            music.playTone(Note.E, 100)
+            
+        } else if (120 < hue && hue < 140) {
+            // zelená
+            music.playTone(Note.G, 100)
+            
+        } else if (210 < hue && hue < 225) {
+            // modrá
+            music.playTone(Note.FSharp5, 100)
+            
         }
         
-        control.waitMicros(1000)
-        console.logValue("stop", stop)
     }
 }
 
@@ -104,7 +98,7 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
         . . # . .
         . . # . .
         . . # . .
-        `, 0)
+        `)
     } else {
         basic.showLeds(`
         # # . # #
