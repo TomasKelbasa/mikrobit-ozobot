@@ -1,6 +1,6 @@
 pins.setPull(DigitalPin.P13, PinPullMode.PullNone)
 pins.setPull(DigitalPin.P14, PinPullMode.PullNone)
-pins.setPull(DigitalPin.P16, PinPullMode.PullNone)
+let strip = neopixel.create(DigitalPin.P8, 8, NeoPixelMode.RGB)
 let colors = {
     "red" : [20, 350],
     "yellow" : [70, 80],
@@ -8,11 +8,10 @@ let colors = {
     "blue" : [210, 225],
 }
 
+strip.showRainbow()
 let hysteresis = 10
-let black_lightness = 20
-let white_lightness = 400
 let is_line_white = true
-let speed = 40
+let speed = 20
 let stop = false
 TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 50)
 function track_line(white_line: boolean) {
@@ -32,62 +31,37 @@ function track_line(white_line: boolean) {
     
 }
 
-basic.forever(function on_forever() {
-    
-    // console.log_value("line", track_line(False))
-    // console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
-    console.logValue("hue", PlanetX_RGBsensor.readColor())
-    // console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
-    // basic.pause(200)
-    // lightness = PlanetX_RGBsensor.get_color_point()
-    // hue = PlanetX_RGBsensor.get_color_point()
-    // if 120 < hue < 140:
-    //    music.play_tone(Note.E, music.beat(10)) 
-    let line_direction = track_line(is_line_white)
-    if (line_direction == 3) {
-        TPBot.setWheels(speed, speed)
-    } else if (line_direction == 2) {
-        TPBot.setWheels(0, speed)
-    } else if (line_direction == 1) {
-        TPBot.setWheels(speed, 0)
-    } else if (line_direction == 0) {
-        TPBot.setWheels(speed, speed)
-    } else {
-        music.playTone(Note.A, music.beat(8))
-    }
-    
-})
-function onIn_background() {
+
+basic.forever(
+)
+control.inBackground(function onIn_background() {
     let hue: number;
     
     while (true) {
-        hue = PlanetX_RGBsensor.readColor()
-        console.logValue("hue", hue)
-        if (hue <= 20 || hue >= 350) {
-            // červená
-            music.playTone(Note.C, 100)
-            
-        } else if (70 < hue && hue < 80) {
-            // žlutá
-            music.playTone(Note.E, 100)
-            
-        } else if (120 < hue && hue < 140) {
-            // zelená
-            music.playTone(Note.G, 100)
-            
-        } else if (210 < hue && hue < 225) {
-            // modrá
-            music.playTone(Note.FSharp5, 100)
+        if (!stop) {
+            hue = PlanetX_RGBsensor.readColor()
+            strip.showColor(neopixel.hsl(hue, 100, 30))
+            if (hue <= 20 || hue >= 350) {
+                // červená
+                music.playTone(Note.C, 100)
+                
+            } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
+                // žlutá
+                music.playTone(Note.E, 100)
+                
+            } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
+                // zelená
+                music.playTone(Note.G, 100)
+                
+            } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
+                // modrá
+                music.playTone(Note.FSharp5, 100)
+                
+            }
             
         }
         
     }
-}
-
-// control.in_background(onIn_background)
-input.onButtonPressed(Button.A, function on_button_pressed_a() {
-    
-    black_lightness = PlanetX_RGBsensor.getColorPoint()
 })
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
