@@ -114,30 +114,30 @@ def on_forever():
             music.play_tone(Note.A, music.beat(8))
 
     
+    def on_forever2():
+        pass
+    basic.forever(on_forever2)
 
 
-def onIn_background():
-    global colors,stop
+def onIn_Background():
     while True:
-        if not stop:
-            hue = PlanetX_RGBsensor.read_color()
-            strip.show_color(neopixel.hsl(hue, 100, 30))
-            if (hue <= 20) or (hue >= 350):
-                #červená
-                music.play_tone(Note.C, 100)
-                pass
-            elif colors["yellow"][0]-5 < hue < colors["yellow"][1]+5:
-                #žlutá
-                music.play_tone(Note.E, 100)
-                pass
-            elif colors["green"][0]-5 < hue < colors["green"][1]+5:
-                #zelená
-                music.play_tone(Note.G, 100)
-                pass
-            elif colors["blue"][0]-5 < hue < colors["blue"][1]+5:
-                #modrá
-                music.play_tone(Note.FSHARP5, 100)
-                pass
+        hue = PlanetX_RGBsensor.read_color()
+        if (hue <= 20) or (hue >= 350):
+            #červená
+            music.play_tone(Note.C, 100)
+            pass
+        elif colors["yellow"][0]-5 < hue < colors["yellow"][1]+5:
+            #žlutá
+            music.play_tone(Note.E, 100)
+            pass
+        elif colors["green"][0]-5 < hue < colors["green"][1]+5:
+            #zelená
+            music.play_tone(Note.G, 100)
+            pass
+        elif colors["blue"][0]-5 < hue < colors["blue"][1]+5:
+            #modrá
+            music.play_tone(Note.FSHARP5, 100)
+            pass
 control.in_background(onIn_background)
 
 def on_button_pressed_b():
