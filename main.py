@@ -16,7 +16,7 @@ strip.show_rainbow()
 hysteresis = 10
 
 is_line_white = True
-speed = 20
+speed = 10
 
 stop = False
 
@@ -55,8 +55,8 @@ def on_forever():
     global speed,colors, stop
 
     #console.log_value("line", track_line(False))
-    console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
-    console.log_value("hue",PlanetX_RGBsensor.read_color())
+    #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
+    #console.log_value("hue",PlanetX_RGBsensor.read_color())
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
     #lightness = PlanetX_RGBsensor.get_color_point()
@@ -96,9 +96,9 @@ def on_forever():
         colors["yellow"][0] = hodnotyY[0]
         colors["yellow"][1] = hodnotyY[1]
         music.play_tone(500, 10)
-
         stop = False
         strip.clear()
+        control.in_background(onIn_Background)
 
     if not stop:
         line_direction = track_line(is_line_white)
@@ -114,9 +114,8 @@ def on_forever():
             music.play_tone(Note.A, music.beat(8))
 
     
-    def on_forever2():
-        pass
-    basic.forever(on_forever2)
+
+basic.forever(on_forever)
 
 
 def onIn_Background():
@@ -125,20 +124,24 @@ def onIn_Background():
         if (hue <= 20) or (hue >= 350):
             #červená
             music.play_tone(Note.C, 100)
+            #otočení
             pass
-        elif colors["yellow"][0]-5 < hue < colors["yellow"][1]+5:
+        elif colors["yellow"][0]-10 < hue < colors["yellow"][1]+10:
             #žlutá
             music.play_tone(Note.E, 100)
+            #pokračuje rovně
             pass
-        elif colors["green"][0]-5 < hue < colors["green"][1]+5:
+        elif colors["green"][0]-10 < hue < colors["green"][1]+10:
             #zelená
             music.play_tone(Note.G, 100)
+            #zahne vpravo
+            #za
             pass
-        elif colors["blue"][0]-5 < hue < colors["blue"][1]+5:
+        elif colors["blue"][0]-10 < hue < colors["blue"][1]+10:
             #modrá
             music.play_tone(Note.FSHARP5, 100)
+            #zahne vlevo
             pass
-control.in_background(onIn_background)
 
 def on_button_pressed_b():
     global is_line_white

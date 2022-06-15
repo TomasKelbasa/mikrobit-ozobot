@@ -11,7 +11,7 @@ let colors = {
 strip.showRainbow()
 let hysteresis = 10
 let is_line_white = true
-let speed = 20
+let speed = 10
 let stop = false
 TPBot.setTravelSpeed(TPBot.DriveDirection.Forward, 50)
 function track_line(white_line: boolean) {
@@ -32,36 +32,8 @@ function track_line(white_line: boolean) {
 }
 
 
-
-control.inBackground(function onIn_background() {
-    let hue: number;
-    
-    while (true) {
-        if (!stop) {
-            hue = PlanetX_RGBsensor.readColor()
-            strip.showColor(neopixel.hsl(hue, 100, 30))
-            if (hue <= 20 || hue >= 350) {
-                // červená
-                music.playTone(Note.C, 100)
-                
-            } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
-                // žlutá
-                music.playTone(Note.E, 100)
-                
-            } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
-                // zelená
-                music.playTone(Note.G, 100)
-                
-            } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
-                // modrá
-                music.playTone(Note.FSharp5, 100)
-                
-            }
-            
-        }
-        
-    }
-})
+basic.forever(
+)
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
     if (is_line_white) {
