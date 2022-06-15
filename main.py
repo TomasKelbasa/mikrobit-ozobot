@@ -16,7 +16,7 @@ strip.show_rainbow()
 hysteresis = 10
 
 is_line_white = True
-speed = 10
+speed = 20
 
 stop = False
 
@@ -45,7 +45,7 @@ def kalibruj():
     Rmin = pole[0]
     for b in range(0, 10):
         if pole[b] < Rmin:
-            pole = pole[b]
+            Rmin = pole[b]
         elif pole[b] > Rmax:
             Rmax = pole[b]
     return [Rmin, Rmax]
