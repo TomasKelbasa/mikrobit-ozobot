@@ -51,10 +51,11 @@ def kalibruj():
     return [Rmin, Rmax]
         
 def on_forever():
+
     global speed,colors, stop
 
     #console.log_value("line", track_line(False))
-    #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
+    console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
     console.log_value("hue",PlanetX_RGBsensor.read_color())
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
@@ -112,7 +113,8 @@ def on_forever():
         else:
             music.play_tone(Note.A, music.beat(8))
 
-basic.forever(on_forever)
+    
+
 
 def onIn_background():
     global colors,stop
