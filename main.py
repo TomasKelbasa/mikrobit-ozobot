@@ -16,7 +16,8 @@ strip.show_rainbow()
 
 hysteresis = 10
 
-white_lightness = 50
+white_lightness = 500
+black_lightness = 30
 
 is_line_white = True
 speed = 25
@@ -24,7 +25,9 @@ speed = 25
 rovne = False
 stop = False
 
-pouzeJizda = False
+pouzeJizda = True
+
+potvrzeno = False
 
 def play_note(tone, ms):
     def fn():
@@ -50,7 +53,7 @@ def kalibruj():
     pole = []
 
     for a in range(0, 20):
-            pole.append(PlanetX_RGBsensor.read_color())
+        pole.append(PlanetX_RGBsensor.read_color())
     Rmax = pole[0]
     Rmin = pole[0]
     for b in range(0, 10):
@@ -62,7 +65,7 @@ def kalibruj():
         
 def on_forever():
 
-    global speed,colors, stop, white_lightness
+    global speed,colors, stop, white_lightness, black_lightness, potvrzeno
 
     t1 = control.millis()
 
@@ -84,38 +87,49 @@ def on_forever():
 
         strip.show_color(neopixel.hsl(hue, 100, 50))
         
-        if lightness+300 < white_lightness:
-            if (colors["red"][0] - 5 >= hue) or (colors["red"][1] + 5 <= hue):
+        if (lightness+100 < white_lightness) and (lightness-20 > black_lightness):
+            if (colors["red"][0] + 5 >= hue) or (colors["red"][1] - 5 <= hue):
                 #červená
-                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1)
-                #otočení
-                pass
+                #180° STUPŇŮ
+                play_note(Note.C, 100)
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1.4)
+                potvrzeno = False
             elif (colors["yellow"][0]-5 < hue) and (hue < colors["yellow"][1]+5):
                 #žlutá
+                #ROVNĚ
                 play_note(Note.E, 100)
-                #pokračuje rovně
-                pass
+                TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 1)
+                potvrzeno = False
             elif (colors["green"][0]-5 < hue) and (hue < colors["green"][1]+5):
                 #zelená
+                #VPRAVO
                 play_note(Note.G, 100)
-                TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.4)
-                #zahne vpravo
-                pass
+                TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, 40, 0.5)
+                TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.7)
+                play_note(Note.E, 100)
             elif (colors["blue"][0]-5 < hue) and (hue < colors["blue"][1]+5):
                 #modrá
-                play_note(Note.FSHARP5, 100)
-                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
-                #zahne vlevo
-                pass  
+                #VLEVO
+                if potvrzeno:
+                    play_note(Note.FSHARP5, 100)
+                    TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, 40, 1)
+                    TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
+                    potvrzeno = False
+                else:
+                    TPBot.set_wheels(speed, speed)
+                    potvrzeno = True
+                    basic.pause(100)
     
     if not stop and not rovne:
         line_direction = track_line(is_line_white)
         if line_direction == 3:
             TPBot.set_wheels(speed, speed)
         elif line_direction == 2:
-            TPBot.set_wheels(-20, speed+10)
+            while track_line(is_line_white) == 2:
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, speed, 0.01)
         elif line_direction == 1:
-            TPBot.set_wheels(speed+10, -20)
+            while track_line(is_line_white) == 1:
+                TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, speed, 0.01)
         elif line_direction == 0:
             TPBot.set_wheels(speed, speed)
         else:
@@ -193,3 +207,9 @@ def on_button_pressed_b():
         """, 0)
     is_line_white = not is_line_white
 input.on_button_pressed(Button.B, on_button_pressed_b) 
+
+def on_button_pressed_ab():
+    global black_lightness
+    play_note(Note.D, 5)
+    black_lightness = PlanetX_RGBsensor.get_color_point()
+input.on_button_pressed(Button.AB, on_button_pressed_ab)

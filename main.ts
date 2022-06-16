@@ -11,12 +11,14 @@ let colors = {
 
 strip.showRainbow()
 let hysteresis = 10
-let white_lightness = 50
+let white_lightness = 500
+let black_lightness = 30
 let is_line_white = true
 let speed = 25
 let rovne = false
 let stop = false
-let pouzeJizda = false
+let pouzeJizda = true
+let potvrzeno = false
 function play_note(tone: number, ms: number) {
     control.inBackground(function fn() {
         music.playTone(tone, ms)
@@ -120,28 +122,39 @@ basic.forever(function on_forever() {
         console.logValue("hue", hue)
         console.logValue("lightness", lightness)
         strip.showColor(neopixel.hsl(hue, 100, 50))
-        if (lightness + 300 < white_lightness) {
-            if (colors["red"][0] - 5 >= hue || colors["red"][1] + 5 <= hue) {
+        if (lightness + 100 < white_lightness && lightness - 20 > black_lightness) {
+            if (colors["red"][0] + 5 >= hue || colors["red"][1] - 5 <= hue) {
                 // červená
-                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1)
-                // otočení
-                
+                // 180° STUPŇŮ
+                play_note(Note.C, 100)
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1.4)
+                potvrzeno = false
             } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
                 // žlutá
+                // ROVNĚ
                 play_note(Note.E, 100)
-                // pokračuje rovně
-                
+                TPBot.setTravelTime(TPBot.DriveDirection.Forward, speed, 1)
+                potvrzeno = false
             } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
                 // zelená
+                // VPRAVO
                 play_note(Note.G, 100)
-                TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.4)
-                // zahne vpravo
-                
+                TPBot.setTravelTime(TPBot.DriveDirection.Forward, 40, 0.5)
+                TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.7)
+                play_note(Note.E, 100)
             } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
                 // modrá
-                play_note(Note.FSharp5, 100)
-                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.4)
-                // zahne vlevo
+                // VLEVO
+                if (potvrzeno) {
+                    play_note(Note.FSharp5, 100)
+                    TPBot.setTravelTime(TPBot.DriveDirection.Forward, 40, 1)
+                    TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.4)
+                    potvrzeno = false
+                } else {
+                    TPBot.setWheels(speed, speed)
+                    potvrzeno = true
+                    basic.pause(100)
+                }
                 
             }
             
@@ -154,9 +167,13 @@ basic.forever(function on_forever() {
         if (line_direction == 3) {
             TPBot.setWheels(speed, speed)
         } else if (line_direction == 2) {
-            TPBot.setWheels(-20, speed + 10)
+            while (track_line(is_line_white) == 2) {
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, speed, 0.01)
+            }
         } else if (line_direction == 1) {
-            TPBot.setWheels(speed + 10, -20)
+            while (track_line(is_line_white) == 1) {
+                TPBot.setTravelTime(TPBot.DriveDirection.Right, speed, 0.01)
+            }
         } else if (line_direction == 0) {
             TPBot.setWheels(speed, speed)
         } else {
@@ -188,4 +205,9 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
     }
     
     is_line_white = !is_line_white
+})
+input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
+    
+    play_note(Note.D, 5)
+    black_lightness = PlanetX_RGBsensor.getColorPoint()
 })
