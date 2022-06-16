@@ -84,29 +84,29 @@ def on_forever():
 
         strip.show_color(neopixel.hsl(hue, 100, 50))
         
-
-        if (colors["red"][0] - 5 >= hue) or (colors["red"][1] + 5 <= hue):
-            #červená
-            TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1.2)
-            #otočení
-            pass
-        elif (colors["yellow"][0]-5 < hue) and (hue < colors["yellow"][1]+5):
-            #žlutá
-            play_note(Note.E, 100)
-            #pokračuje rovně
-            pass
-        elif (colors["green"][0]-5 < hue) and (hue < colors["green"][1]+5):
-            #zelená
-            play_note(Note.G, 100)
-            TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.4)
-            #zahne vpravo
-            pass
-        elif (colors["blue"][0]-5 < hue) and (hue < colors["blue"][1]+5):
-            #modrá
-            play_note(Note.FSHARP5, 100)
-            TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
-            #zahne vlevo
-            pass  
+        if lightness+300 < white_lightness:
+            if (colors["red"][0] - 5 >= hue) or (colors["red"][1] + 5 <= hue):
+                #červená
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1)
+                #otočení
+                pass
+            elif (colors["yellow"][0]-5 < hue) and (hue < colors["yellow"][1]+5):
+                #žlutá
+                play_note(Note.E, 100)
+                #pokračuje rovně
+                pass
+            elif (colors["green"][0]-5 < hue) and (hue < colors["green"][1]+5):
+                #zelená
+                play_note(Note.G, 100)
+                TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.4)
+                #zahne vpravo
+                pass
+            elif (colors["blue"][0]-5 < hue) and (hue < colors["blue"][1]+5):
+                #modrá
+                play_note(Note.FSHARP5, 100)
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
+                #zahne vlevo
+                pass  
     
     if not stop and not rovne:
         line_direction = track_line(is_line_white)
@@ -125,6 +125,7 @@ def on_forever():
 
 def on_logo_event_pressed():
     global white_lightness
+    play_note(Note.A, 5)
     white_lightness = PlanetX_RGBsensor.get_color_point()
 input.on_logo_event(TouchButtonEvent.PRESSED, on_logo_event_pressed)
 

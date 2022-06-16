@@ -60,6 +60,7 @@ function kalibruj(): any[] {
 
 input.onLogoEvent(TouchButtonEvent.Pressed, function on_logo_event_pressed() {
     
+    play_note(Note.A, 5)
     white_lightness = PlanetX_RGBsensor.getColorPoint()
 })
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
@@ -119,27 +120,30 @@ basic.forever(function on_forever() {
         console.logValue("hue", hue)
         console.logValue("lightness", lightness)
         strip.showColor(neopixel.hsl(hue, 100, 50))
-        if (colors["red"][0] - 5 >= hue || colors["red"][1] + 5 <= hue) {
-            // červená
-            TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1.2)
-            // otočení
-            
-        } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
-            // žlutá
-            play_note(Note.E, 100)
-            // pokračuje rovně
-            
-        } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
-            // zelená
-            play_note(Note.G, 100)
-            TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.4)
-            // zahne vpravo
-            
-        } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
-            // modrá
-            play_note(Note.FSharp5, 100)
-            TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.4)
-            // zahne vlevo
+        if (lightness + 300 < white_lightness) {
+            if (colors["red"][0] - 5 >= hue || colors["red"][1] + 5 <= hue) {
+                // červená
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1)
+                // otočení
+                
+            } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
+                // žlutá
+                play_note(Note.E, 100)
+                // pokračuje rovně
+                
+            } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
+                // zelená
+                play_note(Note.G, 100)
+                TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.4)
+                // zahne vpravo
+                
+            } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
+                // modrá
+                play_note(Note.FSharp5, 100)
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.4)
+                // zahne vlevo
+                
+            }
             
         }
         
