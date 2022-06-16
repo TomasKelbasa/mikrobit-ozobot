@@ -1,3 +1,4 @@
+console.log("hello!")
 pins.set_pull(DigitalPin.P13, PinPullMode.PULL_NONE)
 pins.set_pull(DigitalPin.P14, PinPullMode.PULL_NONE)
 
@@ -15,12 +16,21 @@ strip.show_rainbow()
 
 hysteresis = 10
 
-is_line_white = True
-speed = 20
+white_lightness = 50
 
+is_line_white = True
+speed = 25
+
+rovne = False
 stop = False
 
-TPBot.set_travel_speed(TPBot.DriveDirection.FORWARD, 50)
+pouzeJizda = False
+
+def play_note(tone, ms):
+    def fn():
+        music.play_tone(tone, ms)
+    
+    control.in_background(fn)
 
 def track_line(white_line):
     left_tracking = pins.digital_read_pin(DigitalPin.P13);
@@ -52,7 +62,9 @@ def kalibruj():
         
 def on_forever():
 
-    global speed,colors, stop
+    global speed,colors, stop, white_lightness
+
+    t1 = control.millis()
 
     #console.log_value("line", track_line(False))
     #console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
@@ -60,88 +72,104 @@ def on_forever():
     #console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
     #basic.pause(200)
     #lightness = PlanetX_RGBsensor.get_color_point()
+
+    if not stop and not pouzeJizda:
+        hl = PlanetX_RGBsensor.read_geek_hl_color()
+
+        hue = Math.floor(hl / 100)
+        lightness = hl - (hue * 100)
+
+        console.log_value("hue", hue)
+        console.log_value("lightness", lightness)
+
+        strip.show_color(neopixel.hsl(hue, 100, 50))
+        
+
+        if (colors["red"][0] - 5 >= hue) or (colors["red"][1] + 5 <= hue):
+            #červená
+            TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1.2)
+            #otočení
+            pass
+        elif (colors["yellow"][0]-5 < hue) and (hue < colors["yellow"][1]+5):
+            #žlutá
+            play_note(Note.E, 100)
+            #pokračuje rovně
+            pass
+        elif (colors["green"][0]-5 < hue) and (hue < colors["green"][1]+5):
+            #zelená
+            play_note(Note.G, 100)
+            TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.4)
+            #zahne vpravo
+            pass
+        elif (colors["blue"][0]-5 < hue) and (hue < colors["blue"][1]+5):
+            #modrá
+            play_note(Note.FSHARP5, 100)
+            TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
+            #zahne vlevo
+            pass  
     
-    if input.button_is_pressed(Button.A):
-        pausa = 4000
-
-        reds = []
-        greens = []
-        blues = []
-        yellows = []
-
-        stop = True
-        TPBot.set_wheels(0,0)
-
-        strip.show_color(neopixel.colors(NeoPixelColors.RED))
-        basic.pause(pausa)
-        hodnotyR = kalibruj()
-        colors["red"][0] = hodnotyR[0]
-        colors["red"][1] = hodnotyR[1]
-        music.play_tone(500, 10)
-        strip.show_color(neopixel.colors(NeoPixelColors.GREEN))
-        basic.pause(pausa)
-        hodnotyG = kalibruj()
-        colors["green"][0] = hodnotyG[0]
-        colors["green"][1] = hodnotyG[1]
-        music.play_tone(500, 10)
-        strip.show_color(neopixel.colors(NeoPixelColors.BLUE))
-        basic.pause(pausa)
-        hodnotyB = kalibruj()
-        colors["blue"][0] = hodnotyB[0]
-        colors["blue"][1] = hodnotyB[1]
-        music.play_tone(500, 10)
-        strip.show_color(neopixel.colors(NeoPixelColors.YELLOW))
-        basic.pause(pausa)
-        hodnotyY = kalibruj()
-        colors["yellow"][0] = hodnotyY[0]
-        colors["yellow"][1] = hodnotyY[1]
-        music.play_tone(500, 10)
-        stop = False
-        strip.clear()
-        control.in_background(onIn_Background)
-
-    if not stop:
+    if not stop and not rovne:
         line_direction = track_line(is_line_white)
         if line_direction == 3:
             TPBot.set_wheels(speed, speed)
         elif line_direction == 2:
-            TPBot.set_wheels(0, speed)
+            TPBot.set_wheels(-20, speed+10)
         elif line_direction == 1:
-            TPBot.set_wheels(speed, 0)
+            TPBot.set_wheels(speed+10, -20)
         elif line_direction == 0:
             TPBot.set_wheels(speed, speed)
         else:
-            music.play_tone(Note.A, music.beat(8))
+            play_note(Note.A, music.beat(8))
 
-    
+    console.log_value("time", control.millis() - t1)
+
+def on_logo_event_pressed():
+    global white_lightness
+    white_lightness = PlanetX_RGBsensor.get_color_point()
+input.on_logo_event(TouchButtonEvent.PRESSED, on_logo_event_pressed)
+
+def on_button_pressed_a():
+    global stop, colors
+    pausa = 4000
+    reds = []
+    greens = []
+    blues = []
+    yellows = []
+
+    stop = True
+    basic.pause(1000)
+    TPBot.set_wheels(0,0)
+
+    strip.show_color(neopixel.colors(NeoPixelColors.RED))
+    basic.pause(pausa)
+    hodnotyR = kalibruj()
+    colors["red"][0] = hodnotyR[0]
+    colors["red"][1] = hodnotyR[1]
+    music.play_tone(500, 10)
+    strip.show_color(neopixel.colors(NeoPixelColors.GREEN))
+    basic.pause(pausa)
+    hodnotyG = kalibruj()
+    colors["green"][0] = hodnotyG[0]
+    colors["green"][1] = hodnotyG[1]
+    music.play_tone(500, 10)
+    strip.show_color(neopixel.colors(NeoPixelColors.BLUE))
+    basic.pause(pausa)
+    hodnotyB = kalibruj()
+    colors["blue"][0] = hodnotyB[0]
+    colors["blue"][1] = hodnotyB[1]
+    music.play_tone(500, 10)
+    strip.show_color(neopixel.colors(NeoPixelColors.YELLOW))
+    basic.pause(pausa)
+    hodnotyY = kalibruj()
+    colors["yellow"][0] = hodnotyY[0]
+    colors["yellow"][1] = hodnotyY[1]
+    music.play_tone(500, 10)
+    strip.clear()
+    stop = False
+
+input.on_button_pressed(Button.A, on_button_pressed_a)
 
 basic.forever(on_forever)
-
-
-def onIn_Background():
-    while True:
-        hue = PlanetX_RGBsensor.read_color()
-        if (hue <= 20) or (hue >= 350):
-            #červená
-            music.play_tone(Note.C, 100)
-            #otočení
-            pass
-        elif colors["yellow"][0]-10 < hue < colors["yellow"][1]+10:
-            #žlutá
-            music.play_tone(Note.E, 100)
-            #pokračuje rovně
-            pass
-        elif colors["green"][0]-10 < hue < colors["green"][1]+10:
-            #zelená
-            music.play_tone(Note.G, 100)
-            #zahne vpravo
-            #za
-            pass
-        elif colors["blue"][0]-10 < hue < colors["blue"][1]+10:
-            #modrá
-            music.play_tone(Note.FSHARP5, 100)
-            #zahne vlevo
-            pass
 
 def on_button_pressed_b():
     global is_line_white
