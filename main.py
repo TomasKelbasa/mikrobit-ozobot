@@ -3,6 +3,7 @@ pins.set_pull(DigitalPin.P13, PinPullMode.PULL_NONE)
 pins.set_pull(DigitalPin.P14, PinPullMode.PULL_NONE)
 
 strip = neopixel.create(DigitalPin.P8, 8, NeoPixelMode.RGB)
+strip.show_rainbow()
 
 colors = {
     "red": [20, 350],
@@ -11,21 +12,20 @@ colors = {
     "blue": [210, 225]
 }
 
-
-strip.show_rainbow()
-
 hysteresis = 10
 
-white_lightness = 500
-black_lightness = 30
-
+white_lightness = 1000
+black_lightness = 40
 is_line_white = True
-speed = 25
+speed = 30
+# max 100
+tracking_dir = 1
+# tracking_dir: 0 = left line border, 1 = center, 2 = right line border
 
-rovne = False
+
 stop = False
 
-pouzeJizda = True
+pouzeJizda = False
 
 potvrzeno = False
 
@@ -65,7 +65,7 @@ def kalibruj():
         
 def on_forever():
 
-    global speed,colors, stop, white_lightness, black_lightness, potvrzeno
+    global speed,colors, stop, potvrzeno
 
     t1 = control.millis()
 
@@ -76,9 +76,11 @@ def on_forever():
     #basic.pause(200)
     #lightness = PlanetX_RGBsensor.get_color_point()
 
-    if not stop and not pouzeJizda:
+    if not pouzeJizda:
+        #přečte zároveň hue a lightness a sloučí hodnoty do jednoho čísla
         hl = PlanetX_RGBsensor.read_geek_hl_color()
 
+        #rozložení hodnot
         hue = Math.floor(hl / 100)
         lightness = hl - (hue * 100)
 
@@ -87,40 +89,43 @@ def on_forever():
 
         strip.show_color(neopixel.hsl(hue, 100, 50))
         
-        if (lightness+100 < white_lightness) and (lightness-20 > black_lightness):
-            if (colors["red"][0] + 5 >= hue) or (colors["red"][1] - 5 <= hue):
+        if (lightness+300 < white_lightness) and (lightness-50 > black_lightness):
+            if (colors["red"][0] >= hue) or (colors["red"][1]-30 <= hue):
                 #červená
                 #180° STUPŇŮ
                 play_note(Note.C, 100)
-                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1.4)
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 1)
                 potvrzeno = False
-            elif (colors["yellow"][0]-5 < hue) and (hue < colors["yellow"][1]+5):
+            elif (colors["yellow"][0]-10 < hue) and (hue < colors["yellow"][1]+10):
                 #žlutá
                 #ROVNĚ
                 play_note(Note.E, 100)
                 TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 1)
                 potvrzeno = False
-            elif (colors["green"][0]-5 < hue) and (hue < colors["green"][1]+5):
+            elif (colors["green"][0]+10 < hue) and (hue < colors["green"][1]+10):
                 #zelená
                 #VPRAVO
-                play_note(Note.G, 100)
-                TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, 40, 0.5)
-                TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.7)
-                play_note(Note.E, 100)
-            elif (colors["blue"][0]-5 < hue) and (hue < colors["blue"][1]+5):
-                #modrá
-                #VLEVO
                 if potvrzeno:
-                    play_note(Note.FSHARP5, 100)
-                    TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, 40, 1)
-                    TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.4)
+                    play_note(Note.G, 100)
+                    TPBot.set_travel_time(TPBot.DriveDirection.RIGHT, 50, 0.5)
                     potvrzeno = False
                 else:
                     TPBot.set_wheels(speed, speed)
                     potvrzeno = True
-                    basic.pause(100)
+                    basic.pause(70)
+            elif (colors["blue"][0] < hue) and (hue < colors["blue"][1]):
+                #modrá
+                #VLEVO
+                if potvrzeno:
+                    play_note(Note.FSHARP5, 100)
+                    TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.5)
+                    potvrzeno = False
+                else:
+                    TPBot.set_wheels(speed, speed)
+                    potvrzeno = True
+                    basic.pause(70)
     
-    if not stop and not rovne:
+    if not stop:
         line_direction = track_line(is_line_white)
         if line_direction == 3:
             TPBot.set_wheels(speed, speed)
@@ -137,13 +142,9 @@ def on_forever():
 
     console.log_value("time", control.millis() - t1)
 
-def on_logo_event_pressed():
-    global white_lightness
-    play_note(Note.A, 5)
-    white_lightness = PlanetX_RGBsensor.get_color_point()
-input.on_logo_event(TouchButtonEvent.PRESSED, on_logo_event_pressed)
+basic.forever(on_forever)
 
-def on_button_pressed_a():
+def on_button_pressed_a2():
     global stop, colors
     pausa = 4000
     reds = []
@@ -182,11 +183,7 @@ def on_button_pressed_a():
     strip.clear()
     stop = False
 
-input.on_button_pressed(Button.A, on_button_pressed_a)
-
-basic.forever(on_forever)
-
-def on_button_pressed_b():
+def on_button_pressed_a():
     global is_line_white
 
     if is_line_white:
@@ -206,10 +203,17 @@ def on_button_pressed_b():
         # # . # #
         """, 0)
     is_line_white = not is_line_white
-input.on_button_pressed(Button.B, on_button_pressed_b) 
+input.on_button_pressed(Button.A, on_button_pressed_a)
 
-def on_button_pressed_ab():
+def on_button_pressed_b():
     global black_lightness
     play_note(Note.D, 5)
     black_lightness = PlanetX_RGBsensor.get_color_point()
-input.on_button_pressed(Button.AB, on_button_pressed_ab)
+    #basic.show_number(PlanetX_RGBsensor.get_color_point())
+input.on_button_pressed(Button.B, on_button_pressed_b)
+
+def on_logo_event_pressed():
+    global white_lightness
+    play_note(Note.A, 5)
+    white_lightness = PlanetX_RGBsensor.get_color_point()
+input.on_logo_event(TouchButtonEvent.PRESSED, on_logo_event_pressed)

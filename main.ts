@@ -2,6 +2,7 @@ console.log("hello!")
 pins.setPull(DigitalPin.P13, PinPullMode.PullNone)
 pins.setPull(DigitalPin.P14, PinPullMode.PullNone)
 let strip = neopixel.create(DigitalPin.P8, 8, NeoPixelMode.RGB)
+strip.showRainbow()
 let colors = {
     "red" : [20, 350],
     "yellow" : [70, 80],
@@ -9,15 +10,16 @@ let colors = {
     "blue" : [210, 225],
 }
 
-strip.showRainbow()
 let hysteresis = 10
-let white_lightness = 500
-let black_lightness = 30
+let white_lightness = 1000
+let black_lightness = 40
 let is_line_white = true
-let speed = 25
-let rovne = false
+let speed = 30
+//  max 100
+let tracking_dir = 1
+//  tracking_dir: 0 = left line border, 1 = center, 2 = right line border
 let stop = false
-let pouzeJizda = true
+let pouzeJizda = false
 let potvrzeno = false
 function play_note(tone: number, ms: number) {
     control.inBackground(function fn() {
@@ -60,12 +62,96 @@ function kalibruj(): any[] {
     return [Rmin, Rmax]
 }
 
-input.onLogoEvent(TouchButtonEvent.Pressed, function on_logo_event_pressed() {
+basic.forever(function on_forever() {
+    let hl: number;
+    let hue: number;
+    let lightness: number;
+    let line_direction: any;
     
-    play_note(Note.A, 5)
-    white_lightness = PlanetX_RGBsensor.getColorPoint()
+    let t1 = control.millis()
+    // console.log_value("line", track_line(False))
+    // console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
+    // console.log_value("hue",PlanetX_RGBsensor.read_color())
+    // console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
+    // basic.pause(200)
+    // lightness = PlanetX_RGBsensor.get_color_point()
+    if (!pouzeJizda) {
+        // přečte zároveň hue a lightness a sloučí hodnoty do jednoho čísla
+        hl = PlanetX_RGBsensor.readGeekHLColor()
+        // rozložení hodnot
+        hue = Math.floor(hl / 100)
+        lightness = hl - hue * 100
+        console.logValue("hue", hue)
+        console.logValue("lightness", lightness)
+        strip.showColor(neopixel.hsl(hue, 100, 50))
+        if (lightness + 300 < white_lightness && lightness - 50 > black_lightness) {
+            if (colors["red"][0] >= hue || colors["red"][1] - 30 <= hue) {
+                // červená
+                // 180° STUPŇŮ
+                play_note(Note.C, 100)
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1)
+                potvrzeno = false
+            } else if (colors["yellow"][0] - 10 < hue && hue < colors["yellow"][1] + 10) {
+                // žlutá
+                // ROVNĚ
+                play_note(Note.E, 100)
+                TPBot.setTravelTime(TPBot.DriveDirection.Forward, speed, 1)
+                potvrzeno = false
+            } else if (colors["green"][0] + 10 < hue && hue < colors["green"][1] + 10) {
+                // zelená
+                // VPRAVO
+                if (potvrzeno) {
+                    play_note(Note.G, 100)
+                    TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.5)
+                    potvrzeno = false
+                } else {
+                    TPBot.setWheels(speed, speed)
+                    potvrzeno = true
+                    basic.pause(70)
+                }
+                
+            } else if (colors["blue"][0] < hue && hue < colors["blue"][1]) {
+                // modrá
+                // VLEVO
+                if (potvrzeno) {
+                    play_note(Note.FSharp5, 100)
+                    TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.5)
+                    potvrzeno = false
+                } else {
+                    TPBot.setWheels(speed, speed)
+                    potvrzeno = true
+                    basic.pause(70)
+                }
+                
+            }
+            
+        }
+        
+    }
+    
+    if (!stop) {
+        line_direction = track_line(is_line_white)
+        if (line_direction == 3) {
+            TPBot.setWheels(speed, speed)
+        } else if (line_direction == 2) {
+            while (track_line(is_line_white) == 2) {
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, speed, 0.01)
+            }
+        } else if (line_direction == 1) {
+            while (track_line(is_line_white) == 1) {
+                TPBot.setTravelTime(TPBot.DriveDirection.Right, speed, 0.01)
+            }
+        } else if (line_direction == 0) {
+            TPBot.setWheels(speed, speed)
+        } else {
+            play_note(Note.A, music.beat(8))
+        }
+        
+    }
+    
+    console.logValue("time", control.millis() - t1)
 })
-input.onButtonPressed(Button.A, function on_button_pressed_a() {
+function on_button_pressed_a2() {
     
     let pausa = 4000
     let reds = []
@@ -101,90 +187,9 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
     music.playTone(500, 10)
     strip.clear()
     stop = false
-})
-basic.forever(function on_forever() {
-    let hl: number;
-    let hue: number;
-    let lightness: number;
-    let line_direction: any;
-    
-    let t1 = control.millis()
-    // console.log_value("line", track_line(False))
-    // console.log_value("lightness",PlanetX_RGBsensor.get_color_point())
-    // console.log_value("hue",PlanetX_RGBsensor.read_color())
-    // console.log_value("dist", TPBot.sonar_return(TPBot.SonarUnit.CENTIMETERS, 300))
-    // basic.pause(200)
-    // lightness = PlanetX_RGBsensor.get_color_point()
-    if (!stop && !pouzeJizda) {
-        hl = PlanetX_RGBsensor.readGeekHLColor()
-        hue = Math.floor(hl / 100)
-        lightness = hl - hue * 100
-        console.logValue("hue", hue)
-        console.logValue("lightness", lightness)
-        strip.showColor(neopixel.hsl(hue, 100, 50))
-        if (lightness + 100 < white_lightness && lightness - 20 > black_lightness) {
-            if (colors["red"][0] + 5 >= hue || colors["red"][1] - 5 <= hue) {
-                // červená
-                // 180° STUPŇŮ
-                play_note(Note.C, 100)
-                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 1.4)
-                potvrzeno = false
-            } else if (colors["yellow"][0] - 5 < hue && hue < colors["yellow"][1] + 5) {
-                // žlutá
-                // ROVNĚ
-                play_note(Note.E, 100)
-                TPBot.setTravelTime(TPBot.DriveDirection.Forward, speed, 1)
-                potvrzeno = false
-            } else if (colors["green"][0] - 5 < hue && hue < colors["green"][1] + 5) {
-                // zelená
-                // VPRAVO
-                play_note(Note.G, 100)
-                TPBot.setTravelTime(TPBot.DriveDirection.Forward, 40, 0.5)
-                TPBot.setTravelTime(TPBot.DriveDirection.Right, 50, 0.7)
-                play_note(Note.E, 100)
-            } else if (colors["blue"][0] - 5 < hue && hue < colors["blue"][1] + 5) {
-                // modrá
-                // VLEVO
-                if (potvrzeno) {
-                    play_note(Note.FSharp5, 100)
-                    TPBot.setTravelTime(TPBot.DriveDirection.Forward, 40, 1)
-                    TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.4)
-                    potvrzeno = false
-                } else {
-                    TPBot.setWheels(speed, speed)
-                    potvrzeno = true
-                    basic.pause(100)
-                }
-                
-            }
-            
-        }
-        
-    }
-    
-    if (!stop && !rovne) {
-        line_direction = track_line(is_line_white)
-        if (line_direction == 3) {
-            TPBot.setWheels(speed, speed)
-        } else if (line_direction == 2) {
-            while (track_line(is_line_white) == 2) {
-                TPBot.setTravelTime(TPBot.DriveDirection.Left, speed, 0.01)
-            }
-        } else if (line_direction == 1) {
-            while (track_line(is_line_white) == 1) {
-                TPBot.setTravelTime(TPBot.DriveDirection.Right, speed, 0.01)
-            }
-        } else if (line_direction == 0) {
-            TPBot.setWheels(speed, speed)
-        } else {
-            play_note(Note.A, music.beat(8))
-        }
-        
-    }
-    
-    console.logValue("time", control.millis() - t1)
-})
-input.onButtonPressed(Button.B, function on_button_pressed_b() {
+}
+
+input.onButtonPressed(Button.A, function on_button_pressed_a() {
     
     if (is_line_white) {
         basic.showLeds(`
@@ -206,8 +211,14 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
     is_line_white = !is_line_white
 })
-input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
+// basic.show_number(PlanetX_RGBsensor.get_color_point())
+input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
     play_note(Note.D, 5)
     black_lightness = PlanetX_RGBsensor.getColorPoint()
+})
+input.onLogoEvent(TouchButtonEvent.Pressed, function on_logo_event_pressed() {
+    
+    play_note(Note.A, 5)
+    white_lightness = PlanetX_RGBsensor.getColorPoint()
 })
