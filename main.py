@@ -19,8 +19,6 @@ black_lightness = 65
 is_line_white = True
 speed = 30
 # max 100
-tracking_dir = 1
-# tracking_dir: 0 = left line border, 1 = center, 2 = right line border
 
 
 stop = False
@@ -91,9 +89,10 @@ def on_forever():
                 potvrzeno = False
             elif (colors["yellow"][0]-10 < hue) and (hue < colors["yellow"][1]+10):
                 #žlutá
-                #ROVNĚ
+                #VLEVO
                 play_note(Note.E, 100)
-                #TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 1)
+                TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 0.5)
+                TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.55)
                 potvrzeno = False
             elif (colors["green"][0] < hue) and (hue < colors["green"][1]+10):
                 #zelená
@@ -109,17 +108,9 @@ def on_forever():
                     basic.pause(50)
             elif (colors["blue"][0] < hue) and (hue < colors["blue"][1]):
                 #modrá
-                #VLEVO
-                if potvrzeno:
-                    play_note(Note.FSHARP5, 100)
-                    TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 0.5)
-                    TPBot.set_travel_time(TPBot.DriveDirection.LEFT, 50, 0.55)
-                    potvrzeno = False
-                else:
-                    TPBot.set_wheels(speed, speed)
-                    potvrzeno = True
-                    basic.pause(100)
-            else:
+                #ROVNĚ
+                pass
+            else:   
                 potvrzeno = False
     
     if not stop:

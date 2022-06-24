@@ -16,8 +16,6 @@ let black_lightness = 65
 let is_line_white = true
 let speed = 30
 //  max 100
-let tracking_dir = 1
-//  tracking_dir: 0 = left line border, 1 = center, 2 = right line border
 let stop = false
 let pouzeJizda = false
 let potvrzeno = false
@@ -82,9 +80,10 @@ basic.forever(function on_forever() {
                 potvrzeno = false
             } else if (colors["yellow"][0] - 10 < hue && hue < colors["yellow"][1] + 10) {
                 // žlutá
-                // ROVNĚ
+                // VLEVO
                 play_note(Note.E, 100)
-                // TPBot.set_travel_time(TPBot.DriveDirection.FORWARD, speed, 1)
+                TPBot.setTravelTime(TPBot.DriveDirection.Forward, speed, 0.5)
+                TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.55)
                 potvrzeno = false
             } else if (colors["green"][0] < hue && hue < colors["green"][1] + 10) {
                 // zelená
@@ -102,17 +101,7 @@ basic.forever(function on_forever() {
                 
             } else if (colors["blue"][0] < hue && hue < colors["blue"][1]) {
                 // modrá
-                // VLEVO
-                if (potvrzeno) {
-                    play_note(Note.FSharp5, 100)
-                    TPBot.setTravelTime(TPBot.DriveDirection.Forward, speed, 0.5)
-                    TPBot.setTravelTime(TPBot.DriveDirection.Left, 50, 0.55)
-                    potvrzeno = false
-                } else {
-                    TPBot.setWheels(speed, speed)
-                    potvrzeno = true
-                    basic.pause(100)
-                }
+                // ROVNĚ
                 
             } else {
                 potvrzeno = false
